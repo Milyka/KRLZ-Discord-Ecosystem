@@ -1,0 +1,28 @@
+# .NET & Visual Studio Build Artifacts
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+publish/
+out/
+
+# Databases & Runtime Storage
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+backups/
+data/discordbot.db
+data/banners/
+data/posters/
+logs/
+*.log
+
+# Sensitive Local Configs
+settings.local.json
+.env
+bot-token
