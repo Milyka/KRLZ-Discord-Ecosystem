@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRLZ Control Center — Панель управления сервером</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --bg-elev: #111827;
+      --card: rgba(17, 24, 39, 0.88);
+      --card-hover: rgba(30, 41, 59, 0.92);
+      --border: rgba(255, 255, 255, 0.09);
+      --border-bright: rgba(56, 189, 248, 0.38);
+      --cyan: #38bdf8;
+      --indigo: #6366f1;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at 15% 0%, rgba(56, 189, 248, 0.10), transparent 40%),
+                  radial-gradient(circle at 85% 100%, rgba(99, 102, 241, 0.10), transparent 40%),
+                  var(--bg);
+      color: var(--text);
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+    }
+    aside {
+      width: 268px;
+      background: rgba(13, 18, 30, 0.96);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 20;
+    }
+    .brand-box {
+      padding: 22px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--cyan), var(--indigo));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+    }
+    .brand-title { font-size: 17px; font-weight: 800; letter-spacing: 0.4px; }
+    .brand-sub { font-size: 11.5px; color: var(--cyan); font-weight: 600; }
+    .nav-list {
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-btn {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.16s ease;
+    }
+    .nav-btn:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+    }
+    .nav-btn.active {
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.16), rgba(99, 102, 241, 0.08));
+      color: #fff;
+      border-color: var(--border-bright);
+      box-shadow: inset 3px 0 0 var(--cyan);
+    }
+    .sidebar-footer {
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    main {
+      margin-left: 268px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    header {
+      height: 68px;
+      padding: 0 28px;
+      background: rgba(15, 23, 42, 0.82);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.14);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+    .auth-bar { display: flex; gap: 10px; align-items: center; }
+    input, select, textarea {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--cyan);
+    }
+    button, .btn {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 9px 15px;
+      border-radius: 9px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    button:hover, .btn:hover { opacity: 0.93; }
+    button:active { transform: scale(0.98); }
+    .btn-secondary { background: #1e293b; border-color: var(--border); }
+    .btn-success { background: linear-gradient(135deg, #059669, #10b981); }
+    .btn-danger { background: linear-gradient(135deg, #e11d48, #f43f5e); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
+    .content { padding: 26px 28px 60px; max-width: 1480px; width: 100%; margin: 0 auto; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 18%;
+      bottom: 18%;
+      width: 4px;
+      border-radius: 4px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+    .kpi-label { color: var(--muted); font-size: 12.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-val { font-size: 26px; font-weight: 800; margin-top: 6px; color: #fff; }
+    .kpi-sub { font-size: 12px; color: var(--cyan); margin-top: 4px; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 22px;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .panel-title { margin: 0; font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .two-col { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; }
+    @media (max-width: 1100px) { .two-col { grid-template-columns: 1fr; } }
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+    code {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 3px 7px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 12.5px;
+      color: #7dd3fc;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-common { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; }
+    .badge-rare { background: rgba(56, 189, 248, 0.18); color: #38bdf8; }
+    .badge-epic { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .badge-legendary { background: rgba(245, 158, 11, 0.22); color: #fbbf24; }
+    .badge-open { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-closed { background: rgba(244, 63, 94, 0.2); color: #fb7185; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .field input, .field select { width: 100%; }
+    .bar-row { margin-bottom: 12px; }
+    .bar-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; }
+    .bar-track { height: 10px; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), var(--indigo)); border-radius: 999px; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+    .modal-card {
+      background: #111827;
+      border: 1px solid var(--border-bright);
+      border-radius: 16px;
+      max-width: 860px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      display: none;
+      z-index: 200;
+    }
+    .subtabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="brand-box">
+      <div class="brand-logo">KR</div>
+      <div>
+        <div class="brand-title">KRLZ SUITE</div>
+        <div class="brand-sub">Admin & Economy Portal</div>
+      </div>
+    </div>
+    <div class="nav-list">
+      <button class="nav-btn active" onclick="switchView('dashboard', this)">📊 Дашборд и Аналитика</button>
+      <button class="nav-btn" onclick="switchView('users', this)">👥 Участники и Досье</button>
+      <button class="nav-btn" onclick="switchView('shop', this)">🛒 Магазин и Предметы</button>
+      <button class="nav-btn" onclick="switchView('clans', this)">🏰 Кланы, Семьи и Аукцион</button>
+      <button class="nav-btn" onclick="switchView('progression', this)">🎯 Квесты и Достижения</button>
+      <button class="nav-btn" onclick="switchView('partygames', this)">🎲 Настолки и Рейд-Боссы</button>
+      <button class="nav-btn" onclick="switchView('transactions', this)">💳 Журнал транзакций</button>
+      <button class="nav-btn" onclick="switchView('tickets', this)">🎫 Тикеты и Транскрипты</button>
+      <button class="nav-btn" onclick="switchView('moderation', this)">🛡️ Модерация и Защита</button>
+      <button class="nav-btn" onclick="switchView('settings', this)">⚙️ Конфигуратор сервера</button>
+    </div>
+    <div class="sidebar-footer">
+      <div>Сервер ID: <code id="lblGuildId">-</code></div>
+      <div style="margin-top:6px;">Валюта: <b id="lblCurrency">-</b></div>
+    </div>
+  </aside>
+
+  <main>
+    <header>
+      <div class="header-left">
+        <div class="status-pill"><span class="status-dot"></span> SQLite + Dapper Online</div>
+        <button class="btn-secondary btn-sm" onclick="refreshCurrentView()">🔄 Обновить данные</button>
+      </div>
+      <div class="auth-bar">
+        <input type="password" id="apiToken" placeholder="AdminApiToken..." style="width:210px;" />
+        <button class="btn-sm" onclick="saveTokenAndLoad()">Подключиться</button>
+        <a class="btn btn-sm" href="/auth/discord">Discord OAuth2</a>
+      </div>
+    </header>
+
+    <div class="content">
+      <div id="view-dashboard">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Участников в базе</div>
+            <div class="kpi-val" id="stUsers">-</div>
+            <div class="kpi-sub" id="stMarriages">Семей: 0 • Питомцев: 0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Наличные на руках</div>
+            <div class="kpi-val" id="stBalance">-</div>
+            <div class="kpi-sub" id="stBank">В Банке KRLZ: 0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Кристаллы & Кланы</div>
+            <div class="kpi-val" id="stCrystals">-</div>
+            <div class="kpi-sub" id="stClansAuctions">Кланов: 0 • Лотов: 0</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Активность чата и войса</div>
+            <div class="kpi-val" id="stMessages">-</div>
+            <div class="kpi-sub" id="stVoice">Войс: 0 ч. • Транзакций: 0</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">🏆 Топ лидеров сервера</h3>
+              <select id="topMetric" onchange="loadTop()">
+                <option value="balance">По балансу наличных</option>
+                <option value="level">По уровню и XP</option>
+                <option value="reputation">По репутации (+rep)</option>
+                <option value="messages">По сообщениям</option>
+                <option value="voice">По голосовому онлайну</option>
+              </select>
+            </div>
+            <table>
+              <thead><tr><th>Место</th><th>Discord ID</th><th>Уровень</th><th>Показатель</th><th>Действие</th></tr></thead>
+              <tbody id="topBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">📈 Структура оборота экономики</h3>
+            </div>
+            <div id="txBreakdownBox"></div>
+            <h4 style="margin:20px 0 10px;font-size:14px;color:var(--muted);">Последние операции</h4>
+            <table>
+              <thead><tr><th>Тип</th><th>От кого → Кому</th><th>Сумма</th></tr></thead>
+              <tbody id="recentTxBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-users" style="display:none;">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">👥 Управление участниками и балансами</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <input id="userSearch" placeholder="Поиск по ID, титулу, Bio..." oninput="loadUsers()" />
+              <select id="userSort" onchange="loadUsers()">
+                <option value="balance">Сортировка: Наличные</option>
+                <option value="bank">Сортировка: Вклад в банке</option>
+                <option value="xp">Сортировка: Уровень / XP</option>
+                <option value="reputation">Сортировка: Репутация</option>
+                <option value="messages">Сортировка: Сообщения</option>
+                <option value="voice">Сортировка: Войс</option>
+              </select>
+              <button class="btn-secondary btn-sm" onclick="promptInspectUser()">🔍 Открыть по Discord ID</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Discord ID</th>
+                <th>Ур. / XP</th>
+                <th>Наличные</th>
+                <th>Вклад / 💎</th>
+                <th>Репутация</th>
+                <th>Клан / Питомец</th>
+                <th>Титул</th>
+                <th>Управление</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="view-shop" style="display:none;">
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">🛒 Магазин ролей и титулов (/shop)</h3>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px;">
+              <div class="field"><label>Название товара</label><input id="shName" placeholder="VIP Роль" /></div>
+              <div class="field"><label>Тип товара</label>
+                <select id="shType">
+                  <option value="role">Discord Роль (role)</option>
+                  <option value="title">Титул профиля (title)</option>
+                </select>
+              </div>
+              <div class="field"><label>Цена в валюте</label><input type="number" id="shPrice" value="2500" /></div>
+              <div class="field"><label>Role ID (для роли)</label><input id="shRoleId" placeholder="1234567890..." /></div>
+              <div class="field"><label>Описание / Значение титула</label><input id="shDesc" placeholder="Эксклюзивный статус" /></div>
+            </div>
+            <button class="btn-success btn-sm" onclick="createShopItem()">➕ Добавить в магазин</button>
+            <table style="margin-top:16px;">
+              <thead><tr><th>#</th><th>Название</th><th>Тип</th><th>Цена</th><th>Role ID</th><th></th></tr></thead>
+              <tbody id="shopBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">🎒 База предметов, Рыбалки и Крафта (item_definitions)</h3>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px;">
+              <div class="field"><label>Код предмета (code)</label><input id="itCode" placeholder="mythic_pearl" /></div>
+              <div class="field"><label>Название</label><input id="itName" placeholder="Мифическая жемчужина" /></div>
+              <div class="field"><label>Категория</label>
+                <select id="itCat">
+                  <option value="fish">Рыба (fish)</option>
+                  <option value="resource">Ресурс (resource)</option>
+                  <option value="tool">Снаряжение (tool)</option>
+                  <option value="consumable">Расходник / Бафф (consumable)</option>
+                  <option value="collectible">Коллекционный (collectible)</option>
+                </select>
+              </div>
+              <div class="field"><label>Редкость</label>
+                <select id="itRarity">
+                  <option value="common">Обычный (common)</option>
+                  <option value="rare">Редкий (rare)</option>
+                  <option value="epic">Эпический (epic)</option>
+                  <option value="legendary">Легендарный (legendary)</option>
+                </select>
+              </div>
+              <div class="field"><label>Базовая цена</label><input type="number" id="itBasePrice" value="500" /></div>
+              <div class="field"><label>Цена продажи (/item sell)</label><input type="number" id="itSellPrice" value="250" /></div>
+              <div class="field" style="grid-column:1/-1;"><label>Описание предмета</label><input id="itDesc" placeholder="Редкий артефакт глубин KRLZ" /></div>
+            </div>
+            <button class="btn-success btn-sm" onclick="saveItemDef()">💾 Сохранить предмет</button>
+            <table style="margin-top:16px;">
+              <thead><tr><th>Код</th><th>Название</th><th>Категория</th><th>Редкость</th><th>Покупка / Продажа</th><th></th></tr></thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-clans" style="display:none;">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">🏰 Кланы сервера KRLZ</h3>
+          </div>
+          <table>
+            <thead><tr><th>ID</th><th>Тег и Название</th><th>Лидер ID</th><th>Состав</th><th>Казна</th><th>Очки славы</th><th>Бонус</th><th>Управление</th></tr></thead>
+            <tbody id="clansBody"></tbody>
+          </table>
+        </div>
+
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title">💍 Семейные союзы и Банк семей (/family)</h3></div>
+            <table>
+              <thead><tr><th>#</th><th>Название семьи</th><th>Супруги</th><th>Ур. любви</th><th>Банк семьи</th><th>Детей</th></tr></thead>
+              <tbody id="familiesBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title">🔨 Лоты Аукциона (/auction)</h3></div>
+            <table>
+              <thead><tr><th>#</th><th>Лот</th><th>Продавец</th><th>Текущая ставка</th><th>Статус</th><th>Окончание</th></tr></thead>
+              <tbody id="auctionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-progression" style="display:none;">
+        <div class="panel" id="bpSeasonBox"></div>
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title">📜 Квесты (/quests)</h3></div>
+            <div class="form-grid" style="margin-bottom:14px;">
+              <div class="field"><label>Код квеста</label><input id="qCode" placeholder="daily_chat_50" /></div>
+              <div class="field"><label>Название</label><input id="qName" placeholder="Душа компании" /></div>
+              <div class="field"><label>Период</label>
+                <select id="qPeriod"><option value="daily">Ежедневный (daily)</option><option value="weekly">Еженедельный (weekly)</option></select>
+              </div>
+              <div class="field"><label>Тип задачи</label>
+                <select id="qObj">
+                  <option value="messages">Сообщения (messages)</option>
+                  <option value="voice_minutes">Минуты в войсе (voice_minutes)</option>
+                  <option value="fish_caught">Поймать рыбу (fish_caught)</option>
+                  <option value="casino_games">Игры в казино (casino_games)</option>
+                </select>
+              </div>
+              <div class="field"><label>Цель (кол-во)</label><input type="number" id="qTarget" value="30" /></div>
+              <div class="field"><label>Награда (Монеты)</label><input type="number" id="qCoins" value="350" /></div>
+              <div class="field" style="grid-column:1/-1;"><label>Описание задачи</label><input id="qDesc" placeholder="Отправить 30 сообщений в текстовых каналах" /></div>
+            </div>
+            <button class="btn-success btn-sm" onclick="saveQuest()">➕ Сохранить квест</button>
+            <table style="margin-top:16px;">
+              <thead><tr><th>Код</th><th>Название</th><th>Период</th><th>Цель</th><th>Награда</th></tr></thead>
+              <tbody id="questsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title">🏅 Достижения и Значки профиля</h3></div>
+            <table>
+              <thead><tr><th>Код</th><th>Достижение</th><th>Событие / Цель</th><th>Редкость</th><th>Награда</th></tr></thead>
+              <tbody id="achBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-transactions" style="display:none;">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">💳 Финансовый журнал транзакций</h3>
+            <select id="txFilter" onchange="loadTransactions()">
+              <option value="">Все типы операций</option>
+              <option value="daily">Ежедневная награда (daily)</option>
+              <option value="work">Работа (work)</option>
+              <option value="transfer">Переводы игроков (transfer)</option>
+              <option value="bank_deposit">Вклады в Банк (bank_deposit)</option>
+              <option value="bank_interest">Проценты Банка (bank_interest)</option>
+              <option value="family_deposit">Семейный банк (family_deposit)</option>
+              <option value="duel_win">Победы в дуэлях (duel_win)</option>
+              <option value="mines_win">Выигрыши Сапёр (mines_win)</option>
+              <option value="web_admin">Правки через Bot.Web (web_admin)</option>
+            </select>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Тип</th><th>Отправитель</th><th>Получатель</th><th>Сумма</th><th>Описание</th><th>Время</th></tr></thead>
+            <tbody id="txBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="view-tickets" style="display:none;">
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title">🎫 Обращения в поддержку (/ticket)</h3></div>
+            <table>
+              <thead><tr><th>Номер</th><th>Автор ID</th><th>Категория</th><th>Тема</th><th>Статус</th><th>Оценка</th><th>Чат</th></tr></thead>
+              <tbody id="ticketsBody"></tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><h3 class="panel-title" id="transcriptTitle">💬 Транскрипт переписки</h3></div>
+            <div id="transcriptBox" style="max-height:540px;overflow-y:auto;color:var(--muted);">Выберите тикет слева, чтобы прочитать историю сообщений.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-moderation" style="display:none;">
+        <div class="subtabs">
+          <button class="btn-secondary btn-sm" onclick="switchModSub('punishments')">⚖️ Наказания</button>
+          <button class="btn-secondary btn-sm" onclick="switchModSub('messages')">📝 Логи сообщений</button>
+          <button class="btn-secondary btn-sm" onclick="switchModSub('nicknames')">🏷️ История никнеймов</button>
+          <button class="btn-secondary btn-sm" onclick="switchModSub('verifications')">✅ Заявки верификации</button>
+          <button class="btn-secondary btn-sm" onclick="switchModSub('security')">🚨 Anti-Nuke / Security</button>
+        </div>
+
+        <div class="panel" id="modSub-punishments">
+          <h3 class="panel-title" style="margin-bottom:14px;">⚖️ Последние наказания модерации</h3>
+          <table>
+            <thead><tr><th>#</th><th>Тип</th><th>Участник ID</th><th>Модератор ID</th><th>Причина</th><th>Активно</th><th>Дата</th></tr></thead>
+            <tbody id="punishBody"></tbody>
+          </table>
+        </div>
+
+        <div class="panel" id="modSub-messages" style="display:none;">
+          <h3 class="panel-title" style="margin-bottom:14px;">📝 Журнал удалённых и изменённых сообщений</h3>
+          <table>
+            <thead><tr><th>Автор</th><th>Канал ID</th><th>Содержимое</th><th>Изменено / Статус</th><th>Время</th></tr></thead>
+            <tbody id="msgLogsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="panel" id="modSub-nicknames" style="display:none;">
+          <h3 class="panel-title" style="margin-bottom:14px;">🏷️ История смены никнеймов</h3>
+          <table>
+            <thead><tr><th>#</th><th>Discord ID</th><th>Старый ник</th><th>Новый ник</th><th>Дата</th></tr></thead>
+            <tbody id="nickLogsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="panel" id="modSub-verifications" style="display:none;">
+          <h3 class="panel-title" style="margin-bottom:14px;">✅ Заявки на верификацию</h3>
+          <table>
+            <thead><tr><th>#</th><th>Участник ID</th><th>Ответы анкеты</th><th>Статус</th><th>Модератор</th><th>Дата</th></tr></thead>
+            <tbody id="verifLogsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="panel" id="modSub-security" style="display:none;">
+          <h3 class="panel-title" style="margin-bottom:14px;">🚨 Журнал срабатываний Anti-Nuke / Anti-Raid</h3>
+          <table>
+            <thead><tr><th>#</th><th>Субъект ID</th><th>Событие</th><th>Детали</th><th>Принятые меры</th><th>Время</th></tr></thead>
+            <tbody id="securityBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="view-partygames" style="display:none;">
+        <div class="two-col">
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">🎲 Конструктор карточек (Бункер / Шпион / Своя Игра)</h3>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px;">
+              <div class="field">
+                <label>Тип контента</label>
+                <select id="pgType">
+                  <option value="bunker_disaster">☢️ Бункер — Катастрофа</option>
+                  <option value="spyfall_location">🕵️ Шпион — Секретная локация</option>
+                  <option value="quiz_question">🧠 Своя Игра — Вопрос</option>
+                  <option value="codenames_word">🗺️ Кодовые Имена — Слово</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Заголовок / Название / Вопрос</label>
+                <input id="pgTitle" placeholder="Например: Пандемия Кибер-Вируса 2035" />
+              </div>
+              <div class="field" style="grid-column:1/-1;">
+                <label>Описание / Легенда / Ответ</label>
+                <input id="pgSubtitle" placeholder="Описание катастрофы или правильный ответ..." />
+              </div>
+              <div class="field" style="grid-column:1/-1;">
+                <label>Доп. параметры (Описание бункера / Роли)</label>
+                <input id="pgPayload" placeholder="Бункер на 200 м² с автономным реактором..." />
+              </div>
+            </div>
+            <button class="btn-success" onclick="addPartyContent()">➕ Добавить в базу игр KRLZ</button>
+
+            <h4 style="color:var(--cyan);margin:20px 0 10px;">📚 Пользовательские карточки в БД</h4>
+            <table>
+              <thead><tr><th>ID</th><th>Тип</th><th>Заголовок</th><th>Описание</th><th></th></tr></thead>
+              <tbody id="pgContentBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3 class="panel-title">🐉 Журнал Мировых Рейд-Боссов (/raid)</h3>
+            </div>
+            <table>
+              <thead><tr><th>#</th><th>Босс</th><th>Ур.</th><th>HP</th><th>Награда</th><th>Статус</th></tr></thead>
+              <tbody id="pgRaidsBody"></tbody>
+            </table>
+
+            <h4 style="color:var(--cyan);margin:22px 0 10px;">🃏 История партий (Мафия, Бункер, Шпион, Бар Лжецов, Квиз, Коднеймс)</h4>
+            <table>
+              <thead><tr><th>#</th><th>Игра</th><th>Банк</th><th>Раунд / Фаза</th><th>Статус</th><th>Итог</th></tr></thead>
+              <tbody id="pgSessionsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-settings" style="display:none;">
+        <div class="panel">
+          <div class="panel-header">
+            <h3 class="panel-title">⚙️ Глобальная конфигурация сервера и модулей KRLZ</h3>
+            <button class="btn-success" onclick="saveSettings()">💾 Сохранить все настройки</button>
+          </div>
+
+          <h4 style="color:var(--cyan);margin:8px 0 12px;">1. Основная тема и Валюта</h4>
+          <div class="form-grid">
+            <div class="field"><label>HEX-цвет Embed</label><input id="cfgColor" /></div>
+            <div class="field"><label>Название валюты</label><input id="cfgCurName" /></div>
+            <div class="field"><label>Символ валюты</label><input id="cfgCurSym" /></div>
+            <div class="field"><label>Цена кастомной роли (/role-create)</label><input type="number" id="cfgRolePrice" /></div>
+          </div>
+
+          <h4 style="color:var(--cyan);margin:22px 0 12px;">2. Экономика и Начисление опыта</h4>
+          <div class="form-grid">
+            <div class="field"><label>Ежедневный бонус (/daily)</label><input type="number" id="cfgDaily" /></div>
+            <div class="field"><label>Мин. заработок (/work)</label><input type="number" id="cfgWorkMin" /></div>
+            <div class="field"><label>Макс. заработок (/work)</label><input type="number" id="cfgWorkMax" /></div>
+            <div class="field"><label>Монет за сообщение</label><input type="number" id="cfgMsgCoin" /></div>
+            <div class="field"><label>Монет за минуту в войсе</label><input type="number" id="cfgVoiceCoin" /></div>
+            <div class="field"><label>XP за сообщение</label><input type="number" id="cfgMsgXp" /></div>
+            <div class="field"><label>XP за минуту в войсе</label><input type="number" id="cfgVoiceXp" /></div>
+          </div>
+
+          <h4 style="color:var(--cyan);margin:22px 0 12px;">3. Банк KRLZ, Репутация, Семьи и Питомцы</h4>
+          <div class="form-grid">
+            <div class="field"><label>Ставка по вкладу (% в сутки)</label><input type="number" step="0.1" id="cfgBankPct" /></div>
+            <div class="field"><label>Макс. % по вкладу в сутки</label><input type="number" id="cfgBankCap" /></div>
+            <div class="field"><label>Курс покупки 1 💎</label><input type="number" id="cfgCrystalBuy" /></div>
+            <div class="field"><label>Курс продажи 1 💎</label><input type="number" id="cfgCrystalSell" /></div>
+            <div class="field"><label>Кулдаун репутации (часов)</label><input type="number" id="cfgRepCd" /></div>
+            <div class="field"><label>Пошлина усыновления (/family adopt)</label><input type="number" id="cfgAdoptFee" /></div>
+            <div class="field"><label>Цена приручения питомца (/pet adopt)</label><input type="number" id="cfgPetAdopt" /></div>
+            <div class="field"><label>Цена кормления питомца (/pet feed)</label><input type="number" id="cfgPetFeed" /></div>
+          </div>
+
+          <h4 style="color:var(--cyan);margin:22px 0 12px;">4. Казино, Кланы и Аукцион</h4>
+          <div class="form-grid">
+            <div class="field"><label>Мин. ставка в казино и дуэлях</label><input type="number" id="cfgCasMin" /></div>
+            <div class="field"><label>Макс. ставка в казино и дуэлях</label><input type="number" id="cfgCasMax" /></div>
+            <div class="field"><label>Дневной лимит проигрыша</label><input type="number" id="cfgCasLimit" /></div>
+            <div class="field"><label>Цена создания клана (/clan create)</label><input type="number" id="cfgClanPrice" /></div>
+            <div class="field"><label>Комиссия аукциона (%)</label><input type="number" id="cfgAuctionFee" /></div>
+          </div>
+
+          <h4 style="color:var(--cyan);margin:22px 0 12px;">5. Модерация и Защитные системы</h4>
+          <div class="form-grid">
+            <div class="field"><label>Порог варнов (Авто-Мут)</label><input type="number" id="cfgWarnMute" /></div>
+            <div class="field"><label>Порог варнов (Авто-Бан)</label><input type="number" id="cfgWarnBan" /></div>
+            <div class="field"><label>Анти-Спам фильтр</label><select id="cfgAntispam"><option value="true">Включён</option><option value="false">Выключен</option></select></div>
+            <div class="field"><label>Защита Anti-Nuke</label><select id="cfgAntinuke"><option value="true">Включена</option><option value="false">Выключена</option></select></div>
+            <div class="field"><label>Защита Anti-Raid</label><select id="cfgAntiraid"><option value="true">Включена</option><option value="false">Выключена</option></select></div>
+            <div class="field"><label>Капча при входе</label><select id="cfgCaptcha"><option value="true">Включена</option><option value="false">Выключена</option></select></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="userModal">
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;" id="umTitle">Досье участника</h3>
+        <button class="btn-secondary btn-sm" onclick="closeUserModal()">✕ Закрыть</button>
+      </div>
+      <div class="form-grid" style="margin-bottom:18px;">
+        <div class="field"><label>Начислить / Списать наличные (+/-)</label><input type="number" id="umBalDelta" value="0" /></div>
+        <div class="field"><label>Установить опыт (XP)</label><input type="number" id="umXp" /></div>
+        <div class="field"><label>Депозит в Банке KRLZ</label><input type="number" id="umBank" /></div>
+        <div class="field"><label>Кристаллы 💎</label><input type="number" id="umCrystals" /></div>
+        <div class="field"><label>Репутация</label><input type="number" id="umRep" /></div>
+        <div class="field"><label>Титул профиля</label><input id="umUserTitle" /></div>
+        <div class="field" style="grid-column:1/-1;"><label>Описание профиля (Bio)</label><input id="umBio" /></div>
+        <div class="field"><label>Выдать предмет (код из базы)</label><input id="umGrantCode" placeholder="например: golden_carp" /></div>
+        <div class="field"><label>Количество предметов</label><input type="number" id="umGrantQty" value="1" /></div>
+      </div>
+      <button class="btn-success" onclick="saveUserChanges()">💾 Применить изменения к профилю</button>
+
+      <div class="two-col" style="margin-top:20px;">
+        <div>
+          <h4 style="margin:0 0 8px;color:var(--cyan);">🎒 Инвентарь игрока</h4>
+          <div id="umInvBox" style="font-size:13px;color:var(--muted);"></div>
+        </div>
+        <div>
+          <h4 style="margin:0 0 8px;color:var(--cyan);">⚠️ Активные варны и Питомец</h4>
+          <div id="umMetaBox" style="font-size:13px;color:var(--muted);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast">Сохранено!</div>
+
+  <script>
+    const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    let currentView = 'dashboard';
+    let currentCurrencySym = 'KR';
+    let inspectedUserId = null;
+
+    document.getElementById('apiToken').value = localStorage.getItem('krlz_token') || 'admin';
+
+    function headers() {
+      return {
+        'Content-Type': 'application/json',
+        'X-Admin-Token': document.getElementById('apiToken').value
+      };
+    }
+
+    function showToast(text, isErr = false) {
+      const el = document.getElementById('toast');
+      el.textContent = text;
+      el.style.background = isErr ? '#e11d48' : '#10b981';
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 2800);
+    }
+
+    function saveTokenAndLoad() {
+      localStorage.setItem('krlz_token', document.getElementById('apiToken').value);
+      refreshCurrentView();
+      showToast('Подключено к API сервера KRLZ');
+    }
+
+    function switchView(name, btn) {
+      currentView = name;
+      ['dashboard','users','shop','clans','progression','partygames','transactions','tickets','moderation','settings'].forEach(v => {
+        document.getElementById('view-' + v).style.display = (v === name) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      refreshCurrentView();
+    }
+
+    function refreshCurrentView() {
+      loadOverview();
+      if (currentView === 'dashboard') loadTop();
+      if (currentView === 'users') loadUsers();
+      if (currentView === 'shop') { loadShop(); loadItems(); }
+      if (currentView === 'clans') { loadClans(); loadFamilies(); loadAuctions(); }
+      if (currentView === 'progression') loadProgression();
+      if (currentView === 'partygames') loadPartyGames();
+      if (currentView === 'transactions') loadTransactions();
+      if (currentView === 'tickets') loadTickets();
+      if (currentView === 'moderation') { loadPunishments(); loadLogs('messages'); loadLogs('nicknames'); loadLogs('verifications'); loadSecurity(); }
+      if (currentView === 'settings') loadSettings();
+    }
+
+    async function loadOverview() {
+      const r = await fetch('/api/overview', { headers: headers() });
+      if (!r.ok) return;
+      const d = await r.json();
+      currentCurrencySym = d.currencySymbol;
+      document.getElementById('lblGuildId').textContent = d.guildId;
+      document.getElementById('lblCurrency').textContent = `${d.currencyName} (${d.currencySymbol})`;
+      document.getElementById('stUsers').textContent = d.totalUsers.toLocaleString();
+      document.getElementById('stMarriages').textContent = `Семей: ${d.marriagesCount} • Питомцев: ${d.petsCount}`;
+      document.getElementById('stBalance').textContent = `${d.totalBalance.toLocaleString()} ${d.currencySymbol}`;
+      document.getElementById('stBank').textContent = `В Банке KRLZ: ${d.totalBankDeposits.toLocaleString()} ${d.currencySymbol}`;
+      document.getElementById('stCrystals').textContent = `${d.totalCrystals.toLocaleString()} 💎`;
+      document.getElementById('stClansAuctions').textContent = `Кланов: ${d.clansCount} • Активных лотов: ${d.auctionsCount}`;
+      document.getElementById('stMessages').textContent = d.totalMessages.toLocaleString();
+      document.getElementById('stVoice').textContent = `Войс: ${d.totalVoiceHours} ч. • Операций: ${d.txCount.toLocaleString()}`;
+
+      const maxVol = Math.max(1, ...(d.txBreakdown || []).map(x => x.volume));
+      document.getElementById('txBreakdownBox').innerHTML = (d.txBreakdown || []).map(b => {
+        const pct = Math.min(100, Math.round((b.volume / maxVol) * 100));
+        return `<div class="bar-row">
+          <div class="bar-head"><span><code>${esc(b.txType)}</code> (${b.count} оп.)</span><b>${b.volume.toLocaleString()} ${esc(d.currencySymbol)}</b></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('') || '<div style="color:var(--muted)">Операций пока нет</div>';
+
+      document.getElementById('recentTxBody').innerHTML = (d.recentTransactions || []).map(t =>
+        `<tr><td><code>${esc(t.txType)}</code></td><td><small>${esc(t.fromUserId)} → ${esc(t.toUserId)}</small></td><td><b>${t.amount.toLocaleString()} ${esc(d.currencySymbol)}</b></td></tr>`
+      ).join('');
+    }
+
+    async function loadTop() {
+      const m = document.getElementById('topMetric').value;
+      const r = await fetch('/api/leaderboards?metric=' + m, { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('topBody').innerHTML = list.map(x =>
+        `<tr>
+          <td><b>#${esc(x.rank)}</b></td>
+          <td><code>${esc(x.userId)}</code></td>
+          <td>Ур. ${esc(x.level)}</td>
+          <td><b>${x.value.toLocaleString()}</b></td>
+          <td><button class="btn-secondary btn-sm" onclick="openUserModal('${esc(x.userId)}')">✏️ Досье</button></td>
+        </tr>`
+      ).join('');
+    }
+
+    async function loadUsers() {
+      const q = encodeURIComponent(document.getElementById('userSearch').value || '');
+      const s = encodeURIComponent(document.getElementById('userSort').value || 'balance');
+      const r = await fetch(`/api/users?search=${q}&sort=${s}`, { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('usersBody').innerHTML = list.map(u =>
+        `<tr>
+          <td><code>${esc(u.userId)}</code></td>
+          <td><b>Ур. ${u.level}</b> <small style="color:var(--muted)">(${u.xp.toLocaleString()} XP)</small></td>
+          <td><b>${u.balance.toLocaleString()} ${esc(currentCurrencySym)}</b></td>
+          <td>${u.bankDeposit.toLocaleString()} ${esc(currentCurrencySym)} • <b>${u.crystals} 💎</b></td>
+          <td><b>${u.reputation > 0 ? '+' + u.reputation : u.reputation}</b></td>
+          <td>${u.clanTag ? `<span class="badge badge-rare">[${esc(u.clanTag)}]</span> ` : ''}${esc(u.petName || '-')}</td>
+          <td>${esc(u.title)}</td>
+          <td><button class="btn-sm" onclick="openUserModal('${esc(u.userId)}')">✏️ Досье</button></td>
+        </tr>`
+      ).join('');
+    }
+
+    function promptInspectUser() {
+      const id = prompt('Введите Discord ID участника:');
+      if (id && id.trim()) openUserModal(id.trim());
+    }
+
+    async function openUserModal(userId) {
+      inspectedUserId = userId;
+      const r = await fetch(`/api/users/${encodeURIComponent(userId)}`, { headers: headers() });
+      if (!r.ok) { showToast('Не удалось загрузить профиль', true); return; }
+      const d = await r.json();
+      document.getElementById('umTitle').textContent = `Досье участника ID ${d.userId} (Баланс: ${d.balance.toLocaleString()} ${currentCurrencySym})`;
+      document.getElementById('umBalDelta').value = 0;
+      document.getElementById('umXp').value = d.xp;
+      document.getElementById('umBank').value = d.bankDeposit;
+      document.getElementById('umCrystals').value = d.crystals;
+      document.getElementById('umRep').value = d.reputation;
+      document.getElementById('umUserTitle').value = d.title;
+      document.getElementById('umBio').value = d.bio;
+      document.getElementById('umGrantCode').value = '';
+      document.getElementById('umGrantQty').value = 1;
+
+      document.getElementById('umInvBox').innerHTML = (d.inventory && d.inventory.length > 0)
+        ? d.inventory.map(i => `• <b>${esc(i.name)}</b> (<code>${esc(i.code)}</code>) — x${i.quantity}`).join('<br/>')
+        : 'Инвентарь пуст.';
+
+      const petHtml = d.pet ? `Питомец: <b>${esc(d.pet.name)}</b> (${esc(d.pet.rarity)}, Ур.${d.pet.level}, Сытость ${d.pet.satiety}%)<br/><br/>` : 'Питомец не приручен.<br/><br/>';
+      const warnHtml = (d.warns && d.warns.length > 0)
+        ? d.warns.map(w => `• Варн #${w.id}: ${esc(w.reason)} (${esc(w.createdAt)})`).join('<br/>')
+        : 'Активных предупреждений нет.';
+      document.getElementById('umMetaBox').innerHTML = petHtml + warnHtml;
+
+      document.getElementById('userModal').style.display = 'flex';
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').style.display = 'none';
+    }
+
+    async function saveUserChanges() {
+      if (!inspectedUserId) return;
+      const payload = {
+        balanceDelta: parseInt(document.getElementById('umBalDelta').value || '0', 10),
+        newXp: parseInt(document.getElementById('umXp').value || '0', 10),
+        bankDeposit: parseInt(document.getElementById('umBank').value || '0', 10),
+        crystals: parseInt(document.getElementById('umCrystals').value || '0', 10),
+        reputation: parseInt(document.getElementById('umRep').value || '0', 10),
+        title: document.getElementById('umUserTitle').value,
+        bio: document.getElementById('umBio').value,
+        grantItemCode: document.getElementById('umGrantCode').value,
+        grantItemQty: parseInt(document.getElementById('umGrantQty').value || '1', 10)
+      };
+      const r = await fetch(`/api/users/${encodeURIComponent(inspectedUserId)}/modify`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) {
+        showToast('Профиль участника обновлён!');
+        openUserModal(inspectedUserId);
+        loadUsers();
+        loadOverview();
+      }
+    }
+
+    async function loadShop() {
+      const r = await fetch('/api/shop', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('shopBody').innerHTML = list.map(i =>
+        `<tr>
+          <td>#${i.id}</td>
+          <td><b>${esc(i.name)}</b><br/><small style="color:var(--muted)">${esc(i.description)}</small></td>
+          <td><code>${esc(i.itemType)}</code></td>
+          <td><b>${i.price.toLocaleString()} ${esc(currentCurrencySym)}</b></td>
+          <td><code>${esc(i.roleId || '-')}</code></td>
+          <td><button class="btn-danger btn-sm" onclick="deleteShopItem(${i.id})">🗑️</button></td>
+        </tr>`
+      ).join('');
+    }
+
+    async function createShopItem() {
+      const payload = {
+        name: document.getElementById('shName').value,
+        itemType: document.getElementById('shType').value,
+        price: parseInt(document.getElementById('shPrice').value || '1000', 10),
+        roleId: document.getElementById('shRoleId').value,
+        description: document.getElementById('shDesc').value,
+        payload: document.getElementById('shDesc').value
+      };
+      const r = await fetch('/api/shop', { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+      if (r.ok) { showToast('Товар добавлен в магазин!'); loadShop(); }
+    }
+
+    async function deleteShopItem(id) {
+      await fetch(`/api/shop/${id}`, { method: 'DELETE', headers: headers() });
+      showToast('Товар удалён');
+      loadShop();
+    }
+
+    async function loadItems() {
+      const r = await fetch('/api/items', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('itemsBody').innerHTML = list.map(d =>
+        `<tr>
+          <td><code>${esc(d.code)}</code></td>
+          <td><b>${esc(d.name)}</b><br/><small style="color:var(--muted)">${esc(d.description)}</small></td>
+          <td>${esc(d.category)}</td>
+          <td><span class="badge badge-${esc(d.rarity)}">${esc(d.rarity)}</span></td>
+          <td>${d.basePrice} / <b>${d.sellPrice}</b></td>
+          <td><button class="btn-danger btn-sm" onclick="deleteItemDef(${d.id})">🗑️</button></td>
+        </tr>`
+      ).join('');
+    }
+
+    async function saveItemDef() {
+      const payload = {
+        code: document.getElementById('itCode').value,
+        name: document.getElementById('itName').value,
+        category: document.getElementById('itCat').value,
+        rarity: document.getElementById('itRarity').value,
+        basePrice: parseInt(document.getElementById('itBasePrice').value || '100', 10),
+        sellPrice: parseInt(document.getElementById('itSellPrice').value || '50', 10),
+        description: document.getElementById('itDesc').value
+      };
+      const r = await fetch('/api/items', { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+      if (r.ok) { showToast('Предмет сохранён в базе!'); loadItems(); }
+    }
+
+    async function deleteItemDef(id) {
+      await fetch(`/api/items/${id}`, { method: 'DELETE', headers: headers() });
+      showToast('Предмет удалён');
+      loadItems();
+    }
+
+    async function loadClans() {
+      const r = await fetch('/api/clans', { headers: headers() });
+      if (!r.ok) return;
+      const d = await r.json();
+      document.getElementById('clansBody').innerHTML = (d.clans || []).map(c =>
+        `<tr>
+          <td>#${c.id}</td>
+          <td><span class="badge badge-rare">[${esc(c.tag)}]</span> <b>${esc(c.name)}</b></td>
+          <td><code>${esc(c.leaderId)}</code></td>
+          <td>${c.memberCount} / ${c.memberLimit}</td>
+          <td><input type="number" id="clTr-${c.id}" value="${c.treasury}" style="width:110px;" /></td>
+          <td><input type="number" id="clPt-${c.id}" value="${c.points}" style="width:95px;" /></td>
+          <td>+${c.earnBonusPercent}%</td>
+          <td><button class="btn-success btn-sm" onclick="saveClan(${c.id})">💾</button></td>
+        </tr>`
+      ).join('') || '<tr><td colspan="8">Кланы ещё не созданы</td></tr>';
+    }
+
+    async function saveClan(id) {
+      const treasury = parseInt(document.getElementById('clTr-' + id).value || '0', 10);
+      const points = parseInt(document.getElementById('clPt-' + id).value || '0', 10);
+      const r = await fetch(`/api/clans/${id}/modify`, { method: 'POST', headers: headers(), body: JSON.stringify({ treasury, points }) });
+      if (r.ok) { showToast('Казна и очки клана обновлены!'); loadClans(); }
+    }
+
+    async function loadFamilies() {
+      const r = await fetch('/api/families', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('familiesBody').innerHTML = list.map(f =>
+        `<tr>
+          <td>#${f.id}</td>
+          <td><b>${esc(f.familyName)}</b></td>
+          <td><code>${esc(f.user1Id)}</code> + <code>${esc(f.user2Id)}</code></td>
+          <td>Ур. ${f.loveLevel} (${f.loveXp} XP)</td>
+          <td><b>${f.familyBalance.toLocaleString()} ${esc(currentCurrencySym)}</b></td>
+          <td>${f.childrenCount}</td>
+        </tr>`
+      ).join('') || '<tr><td colspan="6">Семейных союзов пока нет</td></tr>';
+    }
+
+    async function loadAuctions() {
+      const r = await fetch('/api/auctions', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('auctionsBody').innerHTML = list.map(a =>
+        `<tr>
+          <td>#${a.id}</td>
+          <td><b>${esc(a.lotTitle)}</b> (x${a.itemQuantity})</td>
+          <td><code>${esc(a.sellerId)}</code></td>
+          <td><b>${(a.currentBid || a.startPrice).toLocaleString()} ${esc(currentCurrencySym)}</b></td>
+          <td><span class="badge badge-${a.status === 'active' ? 'open' : 'common'}">${esc(a.status)}</span></td>
+          <td><small>${esc(a.endsAt)}</small></td>
+        </tr>`
+      ).join('') || '<tr><td colspan="6">Лотов на аукционе нет</td></tr>';
+    }
+
+    async function loadProgression() {
+      const r = await fetch('/api/progression', { headers: headers() });
+      if (!r.ok) return;
+      const d = await r.json();
+      document.getElementById('bpSeasonBox').innerHTML = d.season
+        ? `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;">
+             <div><h3 style="margin:0;">🌟 Активный сезон BattlePass: ${esc(d.season.name)}</h3>
+             <div style="color:var(--muted);font-size:13px;margin-top:4px;">Макс. уровень: ${d.season.maxLevel} • XP на уровень: ${d.season.xpPerLevel} • Цена Premium: ${d.season.premiumPrice.toLocaleString()} ${esc(currentCurrencySym)} • Период: ${esc(d.season.startsAt)} — ${esc(d.season.endsAt)}</div></div>
+           </div>`
+        : '<h3>Сезон BattlePass не запущен</h3>';
+
+      document.getElementById('questsBody').innerHTML = (d.quests || []).map(q =>
+        `<tr>
+          <td><code>${esc(q.code)}</code></td>
+          <td><b>${esc(q.name)}</b><br/><small style="color:var(--muted)">${esc(q.description)}</small></td>
+          <td><span class="badge badge-rare">${esc(q.questPeriod)}</span></td>
+          <td>${esc(q.objectiveType)}: <b>${q.targetValue}</b></td>
+          <td>+${q.rewardCoins} ${esc(currentCurrencySym)} / +${q.rewardXp} XP</td>
+        </tr>`
+      ).join('');
+
+      document.getElementById('achBody').innerHTML = (d.achievements || []).map(a =>
+        `<tr>
+          <td><code>${esc(a.code)}</code></td>
+          <td><b>${esc(a.name)}</b><br/><small style="color:var(--muted)">${esc(a.description)}</small></td>
+          <td>${esc(a.eventType)}: <b>${a.targetValue}</b></td>
+          <td><span class="badge badge-${esc(a.rarity)}">${esc(a.rarity)}</span></td>
+          <td>+${a.rewardCoins} ${esc(currentCurrencySym)} / +${a.rewardXp} XP</td>
+        </tr>`
+      ).join('');
+    }
+
+    async function saveQuest() {
+      const payload = {
+        code: document.getElementById('qCode').value,
+        name: document.getElementById('qName').value,
+        questPeriod: document.getElementById('qPeriod').value,
+        objectiveType: document.getElementById('qObj').value,
+        targetValue: parseInt(document.getElementById('qTarget').value || '20', 10),
+        rewardCoins: parseInt(document.getElementById('qCoins').value || '250', 10),
+        rewardXp: 150,
+        description: document.getElementById('qDesc').value
+      };
+      const r = await fetch('/api/quests', { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+      if (r.ok) { showToast('Квест сохранён!'); loadProgression(); }
+    }
+
+    async function loadTransactions() {
+      const t = encodeURIComponent(document.getElementById('txFilter').value || '');
+      const r = await fetch('/api/transactions?txType=' + t, { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('txBody').innerHTML = list.map(x =>
+        `<tr>
+          <td>#${x.id}</td>
+          <td><code>${esc(x.txType)}</code></td>
+          <td><code>${esc(x.fromUserId)}</code></td>
+          <td><code>${esc(x.toUserId)}</code></td>
+          <td><b>${x.amount.toLocaleString()} ${esc(currentCurrencySym)}</b></td>
+          <td>${esc(x.description)}</td>
+          <td><small>${esc(x.createdAt)}</small></td>
+        </tr>`
+      ).join('');
+    }
+
+    async function loadTickets() {
+      const r = await fetch('/api/tickets', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('ticketsBody').innerHTML = list.map(t =>
+        `<tr>
+          <td><b>#${esc(t.ticketNumber)}</b></td>
+          <td><code>${esc(t.ownerId)}</code></td>
+          <td>${esc(t.category)}</td>
+          <td>${esc(t.subject)}</td>
+          <td><span class="badge badge-${t.status === 'open' ? 'open' : 'closed'}">${esc(t.status)}</span></td>
+          <td>${t.rating ? '⭐ ' + t.rating : '-'}</td>
+          <td><button class="btn-secondary btn-sm" onclick="viewTranscript(${t.id}, ${t.ticketNumber})">💬 Чат</button></td>
+        </tr>`
+      ).join('');
+    }
+
+    async function viewTranscript(id, num) {
+      const r = await fetch(`/api/tickets/${id}/messages`, { headers: headers() });
+      if (!r.ok) return;
+      const msgs = await r.json();
+      document.getElementById('transcriptTitle').textContent = `💬 Транскрипт тикета #${num}`;
+      const box = document.getElementById('transcriptBox');
+      box.innerHTML = msgs.length === 0
+        ? '<p>Сообщений в этом тикете нет.</p>'
+        : msgs.map(m => `<div style="padding:10px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;justify-content:space-between;"><b>${esc(m.authorName)} (<code>${esc(m.authorId)}</code>)</b><small>${esc(m.createdAt)}</small></div>
+            <div style="color:var(--text);margin-top:4px;">${esc(m.content)}</div>
+          </div>`).join('');
+    }
+
+    function switchModSub(sub) {
+      ['punishments','messages','nicknames','verifications','security'].forEach(s => {
+        document.getElementById('modSub-' + s).style.display = (s === sub) ? 'block' : 'none';
+      });
+    }
+
+    async function loadPunishments() {
+      const r = await fetch('/api/punishments', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('punishBody').innerHTML = list.map(p =>
+        `<tr>
+          <td>#${esc(p.id)}</td>
+          <td><code>${esc(p.type)}</code></td>
+          <td><code>${esc(p.userId)}</code></td>
+          <td><code>${esc(p.moderatorId)}</code></td>
+          <td>${esc(p.reason)}</td>
+          <td>${p.active ? '<span class="badge badge-open">Активно</span>' : '<span class="badge badge-common">Снято</span>'}</td>
+          <td>${esc(p.createdAt)}</td>
+        </tr>`
+      ).join('');
+    }
+
+    async function loadLogs(type) {
+      const r = await fetch('/api/logs?type=' + type, { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      if (type === 'messages') {
+        document.getElementById('msgLogsBody').innerHTML = list.map(m =>
+          `<tr>
+            <td><b>${esc(m.authorName)}</b><br/><code>${esc(m.authorId)}</code></td>
+            <td><code>${esc(m.channelId)}</code></td>
+            <td>${esc(m.content)}</td>
+            <td>${m.isDeleted ? '<span class="badge badge-closed">Удалено</span> ' : ''}${m.editedContent ? 'Изм: ' + esc(m.editedContent) : '-'}</td>
+            <td><small>${esc(m.createdAt)}</small></td>
+          </tr>`
+        ).join('');
+      } else if (type === 'nicknames') {
+        document.getElementById('nickLogsBody').innerHTML = list.map(n =>
+          `<tr><td>#${n.id}</td><td><code>${esc(n.userId)}</code></td><td>${esc(n.oldNickname)}</td><td><b>${esc(n.newNickname)}</b></td><td>${esc(n.changedAt)}</td></tr>`
+        ).join('');
+      } else if (type === 'verifications') {
+        document.getElementById('verifLogsBody').innerHTML = list.map(a =>
+          `<tr><td>#${a.id}</td><td><code>${esc(a.userId)}</code></td><td><small>${esc(a.answersJson)}</small></td><td><span class="badge badge-rare">${esc(a.status)}</span></td><td><code>${esc(a.reviewerId)}</code></td><td>${esc(a.createdAt)}</td></tr>`
+        ).join('');
+      }
+    }
+
+    async function loadSecurity() {
+      const r = await fetch('/api/security-events', { headers: headers() });
+      if (!r.ok) return;
+      const list = await r.json();
+      document.getElementById('securityBody').innerHTML = list.map(e =>
+        `<tr><td>#${esc(e.id)}</td><td><code>${esc(e.offenderId)}</code></td><td><b>${esc(e.eventType)}</b></td><td>${esc(e.details)}</td><td>${esc(e.actionTaken)}</td><td>${esc(e.createdAt)}</td></tr>`
+      ).join('');
+    }
+
+
+    async function loadPartyGames() {
+      const r = await fetch('/api/party-games', { headers: headers() });
+      if (!r.ok) return;
+      const d = await r.json();
+
+      document.getElementById('pgContentBody').innerHTML = (d.customContent || []).map(c => `
+        <tr>
+          <td>#${c.id}</td>
+          <td><code>${esc(c.gameType)}</code></td>
+          <td><b>${esc(c.title)}</b></td>
+          <td>${esc(c.subtitle)}</td>
+          <td><button class="btn-danger btn-sm" onclick="deletePartyContent(${c.id})">✕</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="5" style="color:var(--muted);">Используются встроенные наборы карт (добавьте свои выше)</td></tr>';
+
+      document.getElementById('pgRaidsBody').innerHTML = (d.raidBosses || []).map(b => `
+        <tr>
+          <td>#${b.id}</td>
+          <td><b>${esc(b.bossName)}</b></td>
+          <td>Ур.${b.bossLevel}</td>
+          <td>${b.currentHp.toLocaleString()} / ${b.maxHp.toLocaleString()}</td>
+          <td>${b.rewardPoolCoins.toLocaleString()} ${esc(currentCurrencySym)} + ${b.rewardCrystals} 💎</td>
+          <td><span class="badge ${b.status === 'active' ? 'badge-warn' : 'badge-ok'}">${esc(b.status)}</span></td>
+        </tr>
+      `).join('') || '<tr><td colspan="6" style="color:var(--muted);">Рейд-боссы ещё не призывались (/raid)</td></tr>';
+
+      document.getElementById('pgSessionsBody').innerHTML = (d.sessions || []).map(s => `
+        <tr>
+          <td>#${s.id}</td>
+          <td><b>${esc(s.gameType.toUpperCase())}</b></td>
+          <td>${s.prizePool.toLocaleString()} ${esc(currentCurrencySym)}</td>
+          <td>Р.${s.roundNum} (${esc(s.phase)})</td>
+          <td><span class="badge ${s.status === 'active' ? 'badge-warn' : s.status === 'finished' ? 'badge-ok' : 'badge-muted'}">${esc(s.status)}</span></td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(s.winnerSummary || '-')}</td>
+        </tr>
+      `).join('') || '<tr><td colspan="6" style="color:var(--muted);">Партий пока нет</td></tr>';
+    }
+
+    async function addPartyContent() {
+      const payload = {
+        gameType: document.getElementById('pgType').value,
+        title: document.getElementById('pgTitle').value,
+        subtitle: document.getElementById('pgSubtitle').value,
+        payloadJson: document.getElementById('pgPayload').value
+      };
+      if (!payload.title.trim()) {
+        showToast('Укажите заголовок карточки!', true);
+        return;
+      }
+      const r = await fetch('/api/party-games/content', { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+      if (r.ok) {
+        document.getElementById('pgTitle').value = '';
+        document.getElementById('pgSubtitle').value = '';
+        document.getElementById('pgPayload').value = '';
+        showToast('Карточка добавлена в базу игр!');
+        loadPartyGames();
+      }
+    }
+
+    async function deletePartyContent(id) {
+      const r = await fetch('/api/party-games/content/' + id, { method: 'DELETE', headers: headers() });
+      if (r.ok) {
+        showToast('Карточка удалена');
+        loadPartyGames();
+      }
+    }
+
+    async function loadSettings() {
+      const r = await fetch('/api/settings', { headers: headers() });
+      if (!r.ok) return;
+      const s = await r.json();
+      document.getElementById('cfgColor').value = s.embedColorHex;
+      document.getElementById('cfgCurName').value = s.currencyName;
+      document.getElementById('cfgCurSym').value = s.currencySymbol;
+      document.getElementById('cfgRolePrice').value = s.customRolePrice;
+      document.getElementById('cfgDaily').value = s.dailyAmount;
+      document.getElementById('cfgWorkMin').value = s.workMinAmount;
+      document.getElementById('cfgWorkMax').value = s.workMaxAmount;
+      document.getElementById('cfgMsgCoin').value = s.messageRewardAmount;
+      document.getElementById('cfgVoiceCoin').value = s.voiceRewardPerMinute;
+      document.getElementById('cfgMsgXp').value = s.xpPerMessage;
+      document.getElementById('cfgVoiceXp').value = s.xpPerVoiceMinute;
+      document.getElementById('cfgBankPct').value = s.bankDailyInterestPercent;
+      document.getElementById('cfgBankCap').value = s.bankMaxInterestCap;
+      document.getElementById('cfgCrystalBuy').value = s.crystalBuyRate;
+      document.getElementById('cfgCrystalSell').value = s.crystalSellRate;
+      document.getElementById('cfgRepCd').value = s.repCooldownHours;
+      document.getElementById('cfgAdoptFee').value = s.adoptionFee;
+      document.getElementById('cfgPetAdopt').value = s.petAdoptPrice;
+      document.getElementById('cfgPetFeed').value = s.petFeedCost;
+      document.getElementById('cfgCasMin').value = s.casinoMinBet;
+      document.getElementById('cfgCasMax').value = s.casinoMaxBet;
+      document.getElementById('cfgCasLimit').value = s.casinoDailyLossLimit;
+      document.getElementById('cfgClanPrice').value = s.clanPrice;
+      document.getElementById('cfgAuctionFee').value = s.auctionFee;
+      document.getElementById('cfgWarnMute').value = s.warnThresholdMute;
+      document.getElementById('cfgWarnBan').value = s.warnThresholdBan;
+      document.getElementById('cfgAntispam').value = String(s.antispamEnabled);
+      document.getElementById('cfgAntinuke').value = String(s.antinukeEnabled);
+      document.getElementById('cfgAntiraid').value = String(s.antiraidEnabled);
+      document.getElementById('cfgCaptcha').value = String(s.captchaEnabled);
+    }
+
+    async function saveSettings() {
+      const payload = {
+        embedColorHex: document.getElementById('cfgColor').value,
+        currencyName: document.getElementById('cfgCurName').value,
+        currencySymbol: document.getElementById('cfgCurSym').value,
+        customRolePrice: parseInt(document.getElementById('cfgRolePrice').value || '5000', 10),
+        dailyAmount: parseInt(document.getElementById('cfgDaily').value || '350', 10),
+        workMinAmount: parseInt(document.getElementById('cfgWorkMin').value || '80', 10),
+        workMaxAmount: parseInt(document.getElementById('cfgWorkMax').value || '250', 10),
+        messageRewardAmount: parseInt(document.getElementById('cfgMsgCoin').value || '5', 10),
+        voiceRewardPerMinute: parseInt(document.getElementById('cfgVoiceCoin').value || '3', 10),
+        xpPerMessage: parseInt(document.getElementById('cfgMsgXp').value || '15', 10),
+        xpPerVoiceMinute: parseInt(document.getElementById('cfgVoiceXp').value || '10', 10),
+        bankDailyInterestPercent: parseFloat(document.getElementById('cfgBankPct').value || '1.5'),
+        bankMaxInterestCap: parseInt(document.getElementById('cfgBankCap').value || '5000', 10),
+        crystalBuyRate: parseInt(document.getElementById('cfgCrystalBuy').value || '250', 10),
+        crystalSellRate: parseInt(document.getElementById('cfgCrystalSell').value || '200', 10),
+        repCooldownHours: parseInt(document.getElementById('cfgRepCd').value || '12', 10),
+        adoptionFee: parseInt(document.getElementById('cfgAdoptFee').value || '1500', 10),
+        petAdoptPrice: parseInt(document.getElementById('cfgPetAdopt').value || '4500', 10),
+        petFeedCost: parseInt(document.getElementById('cfgPetFeed').value || '120', 10),
+        casinoMinBet: parseInt(document.getElementById('cfgCasMin').value || '25', 10),
+        casinoMaxBet: parseInt(document.getElementById('cfgCasMax').value || '50000', 10),
+        casinoDailyLossLimit: parseInt(document.getElementById('cfgCasLimit').value || '100000', 10),
+        clanPrice: parseInt(document.getElementById('cfgClanPrice').value || '15000', 10),
+        auctionFee: parseInt(document.getElementById('cfgAuctionFee').value || '5', 10),
+        warnThresholdMute: parseInt(document.getElementById('cfgWarnMute').value || '3', 10),
+        warnThresholdBan: parseInt(document.getElementById('cfgWarnBan').value || '5', 10),
+        antispamEnabled: document.getElementById('cfgAntispam').value === 'true',
+        antinukeEnabled: document.getElementById('cfgAntinuke').value === 'true',
+        antiraidEnabled: document.getElementById('cfgAntiraid').value === 'true',
+        captchaEnabled: document.getElementById('cfgCaptcha').value === 'true'
+      };
+      const r = await fetch('/api/settings', { method: 'POST', headers: headers(), body: JSON.stringify(payload) });
+      if (r.ok) {
+        showToast('Все настройки сервера и модулей сохранены!');
+        loadOverview();
+      }
+    }
+
+    refreshCurrentView();
+  </script>
+</body>
+</html>
