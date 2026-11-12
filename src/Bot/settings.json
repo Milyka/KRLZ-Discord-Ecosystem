@@ -1,6 +1,6 @@
 {
-  "Token": "YOUR_DISCORD_BOT_TOKEN_HERE",
-  "GuildId": 1482271896568467579,
+  "Token": "TOKEN",
+  "GuildId": 0,
   "EnableMessageContentIntent": true,
   "DatabaseConnectionString": "Data Source=krlz.db;Cache=Shared",
   "EmbedColorHex": "#5865F2",
@@ -8,21 +8,21 @@
   "CurrencyName": "Coin",
   "CurrencySymbol": "KR",
   "CustomRolePrice": 5000,
-  "CustomRoleAnchorRoleId": 1565721501079183490,
+  "CustomRoleAnchorRoleId": 0,
   "Channels": {
-    "ModLogChannelId": 1565685505641938985,
-    "TicketLogChannelId": 1565727408873808132,
-    "TicketPanelChannelId": 1565476066158579805,
-    "TicketCategoryId": 1565473806078976061,
-    "WelcomeChannelId": 1565721879908450436,
-    "SecurityLogChannelId": 1565727466725576714
+    "ModLogChannelId": 0,
+    "TicketLogChannelId": 0,
+    "TicketPanelChannelId": 0,
+    "TicketCategoryId": 0,
+    "WelcomeChannelId": 0,
+    "SecurityLogChannelId": 0
   },
   "Roles": {
-    "AdminRoleId": 1482272702701109351,
-    "ModeratorRoleId": 1520425392706551949,
-    "MutedRoleId": 1553561301186248794,
-    "VerifiedRoleId": 1548721744871821476,
-    "QuarantineRoleId": 1548721660914311299
+    "AdminRoleId": 0,
+    "ModeratorRoleId": 0,
+    "MutedRoleId": 0,
+    "VerifiedRoleId": 0,
+    "QuarantineRoleId": 0
   },
   "Economy": {
     "DailyAmount": 350,
@@ -81,7 +81,7 @@
   },
   "Clans": {
     "CreationPrice": 15000,
-    "ClanCategoryId": 1565729837946110023,
+    "ClanCategoryId": 0,
     "BaseMemberLimit": 15,
     "BaseOfficerSlots": 2,
     "UpgradeMemberLimitPrice": 5000,
@@ -94,7 +94,7 @@
     "PointsPerWarWin": 500
   },
   "Auction": {
-    "ChannelId": 1566933458171994242,
+    "ChannelId": 0,
     "CommissionPercent": 5,
     "AntiSnipeWindowSeconds": 120,
     "AntiSnipeExtendSeconds": 180,
@@ -102,8 +102,8 @@
   },
   "Casino": {
     "MinBet": 25,
-    "MaxBet": 50000,
-    "DailyLossLimit": 100000,
+    "MaxBet": 5000,
+    "DailyLossLimit": 50000,
     "CooldownSeconds": 8,
     "RouletteRoundSeconds": 30,
     "JackpotRoundSeconds": 45,
@@ -153,9 +153,9 @@
     "BpXpPerVoiceMinute": 8
   },
   "PrivateVoice": {
-    "HubVoiceChannelId": 1565729700968665138,
-    "PrivateRoomsCategoryId": 1565685782566543400,
-    "ControlTextChannelId": 1565728140960076008,
+    "HubVoiceChannelId": 0,
+    "PrivateRoomsCategoryId": 0,
+    "ControlTextChannelId": 0,
     "RoomNameTemplate": "Комната {user}",
     "EmptyRoomDeleteSeconds": 30
   },
@@ -164,7 +164,7 @@
     "MaxAttempts": 3,
     "TimeoutMinutesOnFail": 30,
     "KickOnRepeatedFail": false,
-    "ApplicationReviewChannelId": 1565721954898673704
+    "ApplicationReviewChannelId": 0
   },
   "Automod": {
     "Enabled": true,
@@ -182,17 +182,17 @@
     }
   },
   "Logging": {
-    "MessageLogChannelId": 1565727543901032709,
-    "VoiceLogChannelId": 1565727649895162027,
-    "MemberLogChannelId": 1565727466725576714,
-    "ChannelEventsLogChannelId": 1565727466725576714,
+    "MessageLogChannelId": 0,
+    "VoiceLogChannelId": 0,
+    "MemberLogChannelId": 0,
+    "ChannelEventsLogChannelId": 0,
     "RetentionDays": 30
   },
   "DatabaseBackup": {
     "Enabled": true,
     "IntervalHours": 24,
     "KeepLocalCopies": 7,
-    "BackupChannelId": 1565736796686516295,
+    "BackupChannelId": 0,
     "BackupDirectory": "backups"
   },
   "Social": {
@@ -204,8 +204,8 @@
     "CardColorChangePrice": 1000
   },
   "Bank": {
-    "DailyInterestPercent": 1.5,
-    "MaxInterestCapPerDay": 5000,
+    "DailyInterestPercent": 0.2,
+    "MaxInterestCapPerDay": 2000,
     "MinDepositAmount": 100,
     "CrystalBuyRate": 250,
     "CrystalSellRate": 200
@@ -219,9 +219,9 @@
   },
   "WebPanel": {
     "ListenUrl": "http://0.0.0.0:5080",
-    "DiscordClientId": "PUT_DISCORD_CLIENT_ID",
-    "DiscordClientSecret": "PUT_DISCORD_CLIENT_SECRET",
+    "DiscordClientId": "DISCORD_CLIENT_ID",
+    "DiscordClientSecret": "DISCORD_CLIENT_SECRET",
     "RedirectUri": "http://localhost:5080/auth/callback",
-    "AdminApiToken": "admin"
+    "AdminApiToken": "TOKEN"
   }
 }
